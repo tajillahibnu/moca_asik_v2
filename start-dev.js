@@ -11,7 +11,7 @@ const serverPort = process.env.SERVER_PORT || 8000;
 // Configuration for processes
 const commands = [
     {
-        command: `npm run dev --prefix client -- --port ${clientPort}`,
+        command: `npx vite --port ${clientPort}`,
         name: 'client',
         prefixColor: 'blue',
     },
