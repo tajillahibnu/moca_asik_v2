@@ -1,9 +1,27 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAuth } from '../composables/useAuth'
 
 const mode = import.meta.env.VITE_APP_MODE
+const { login, isLoading, errors } = useAuth()
+
+const form = ref({
+    email: '',
+    password: ''
+})
+
+const handleLogin = async () => {
+    await login(form.value)
+}
+
+// Helper to fill form (Development only)
+const fillForm = (email: string, pass: string) => {
+    form.value.email = email
+    form.value.password = pass
+}
 </script>
 
 <template>
@@ -14,10 +32,12 @@ const mode = import.meta.env.VITE_APP_MODE
                 Enter your email below to login to your portal
             </p>
         </div>
-        <div class="grid gap-4">
+        <form @submit.prevent="handleLogin" class="grid gap-4">
             <div class="grid gap-2">
                 <Label for="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+                <Input id="email" type="email" placeholder="m@example.com" v-model="form.email" required 
+                    :class="{'border-red-500': errors?.email}" />
+                <p v-if="errors?.email" class="text-xs text-red-500">{{ errors.email[0] }}</p>
             </div>
             <div class="grid gap-2">
                 <div class="flex items-center">
@@ -26,12 +46,14 @@ const mode = import.meta.env.VITE_APP_MODE
                         Forgot your password?
                     </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" v-model="form.password" required 
+                    :class="{'border-red-500': errors?.password}" />
+                 <p v-if="errors?.password" class="text-xs text-red-500">{{ errors.password[0] }}</p>
             </div>
-            <Button type="submit" class="w-full" @click="$router.push('/dashboard')">
-                Login
+            <Button type="submit" class="w-full" :disabled="isLoading">
+                {{ isLoading ? 'Signing in...' : 'Login' }}
             </Button>
-        </div>
+        </form>
         <div class="mt-4 text-center text-sm">
             Don't have an account?
             <a href="#" class="underline">
@@ -42,12 +64,12 @@ const mode = import.meta.env.VITE_APP_MODE
         <!-- Development Hints -->
         <div v-if="mode === 'development'"
             class="mt-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm border border-dashed border-slate-300 dark:border-slate-700">
-            <p class="font-semibold mb-3">Development Accounts</p>
+            <p class="font-semibold mb-3">Development Accounts (Click to Autofill)</p>
             <div class="grid grid-cols-1 gap-3">
-                <div class="grid grid-cols-[60px_1fr] gap-1 text-xs">
+                <button type="button" @click="fillForm('admin@sekolahbeta.com', 'password')" class="grid grid-cols-[60px_1fr] gap-1 text-xs text-left hover:bg-white/50 p-1 rounded transition-colors cursor-pointer">
                     <span class="text-muted-foreground font-semibold">Admin:</span>
                     <span class="font-mono">admin@sekolahbeta.com</span>
-                </div>
+                </button>
                 <div class="grid grid-cols-[60px_1fr] gap-1 text-xs">
                     <span class="text-muted-foreground font-semibold">Guru:</span>
                     <span class="font-mono">guru@sekolahbeta.com</span>
